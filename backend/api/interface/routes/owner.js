@@ -1,0 +1,15 @@
+import authMiddleware from "../../lib/authMiddleware.js"
+import { addHotel, updateHotel } from "../controllers/hotel_controller.js"
+import { ownerSignin, ownerSignup } from "../controllers/owner_controller.js"
+
+import { upload } from "../model/hotel.model.js"
+
+
+
+export default function ownerRouter(router){
+    const multiple = [authMiddleware,upload.single('file')]
+    router.post("/owner/signup",ownerSignup)
+    router.post("/owner/signin",ownerSignin)
+    router.post("/owner/addhotel",multiple,addHotel)
+    router.put("/owner/updatehotel",authMiddleware,updateHotel)
+}
