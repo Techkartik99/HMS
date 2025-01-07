@@ -14,11 +14,12 @@ app.use(
       credentials: true,
       allowedHeaders: "Content-Type, Authorization",
     })
-  );
-  
+  );  
 app.use(express.json())
 dbConnection()
 app.use("/v1",createRouter())
 app.listen(env.PORT,()=>{
     console.log("PORT Connected", env.PORT)
 })
+
+// test 
