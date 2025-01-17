@@ -3,7 +3,7 @@ import env from "../../../infrastructure/env.js"
 import { hotelValidator } from "../../config/helpers/validators.js"
 import bookings from "../../config/schema/booking.schema.js"
 import hotel from "../../config/schema/hotel.schema.js"
-import { fileUpload, upload } from "../model/hotel.model.js"
+import { fileUpload } from "../model/hotel.model.js"
 
 
 export const addHotel = async(req,res) =>{
@@ -11,15 +11,14 @@ export const addHotel = async(req,res) =>{
     const file = req.file
     console.log(file)
     console.log(body)
-    console.log(Date.now());
-    
+    console.log(Date.now())
     try {
         // const success = hotelValidator.safeParse(body)
         // if(!success.success){
         //     return res.status(401).json({msg: "data not in format"})
         // }
-        const upload = await fileUpload(file)
-        const url = `${env.CLOUDFRONT_DOMAIN}/${upload.filename}`
+        const uploaded = await fileUpload(file)
+        const url = `${env.CLOUDFRONT_DOMAIN}/${uploaded.filename}`
         const response = await hotel.create({
             hotelName: body.name,
             area: body.area,
@@ -35,10 +34,9 @@ export const addHotel = async(req,res) =>{
             status: true,
             createdBy: req.userId
         })
-
+    
         res.json({
             msg: "hotel added",
-            filename:upload.filename
         })
     } catch (error) {
         console.log(error)
@@ -77,9 +75,9 @@ export const searchHotel = async(req,res)=>{
         let hotels = []
         const response = await hotel.find({
             $or: [
-                {hotelName: {$regex: new RegExp("^" + body.value,"i")}},
-                {area: {$regex: new RegExp("^" + body.value,"i")}},
-                {city: {$regex: new RegExp("^" + body.value,"i")}}
+                {hotelName: {$regex: new RegExp("^" + body.location,"i")}},
+                {area: {$regex: new RegExp("^" + body.location,"i")}},
+                {city: {$regex: new RegExp("^" + body.location,"i")}}
             ]
         })
         const checkFromDate = new Date(body.fromDate)
@@ -98,7 +96,7 @@ export const searchHotel = async(req,res)=>{
                     {toDate: {$gte: checkFromDate}}
                 ]
             })
-            const roomsBooked = overlappingBookings.length;
+            const roomsBooked = overlappingBookings.reduce((accumulator,item)=> { return accumulator + item.rooms},0)
             console.log(roomsBooked)
             let RoomType = "";
             if(body.RoomType = "AC"){
@@ -106,7 +104,7 @@ export const searchHotel = async(req,res)=>{
             }else{
                 RoomType = "TotalNonAc"
             }
-            if((response[i][RoomType] - (roomsBooked + body.totalRooms )) >0 ){
+            if((response[i][RoomType] - (roomsBooked + body.rooms )) >0 ){
                 hotels.push(response[i])
             }
         }
@@ -124,6 +122,7 @@ export const bookHotel = async(req,res)=>{
             fromDate: new Date(body.fromDate),
             toDate: new Date(body.toDate),
             guests: body.guests,
+            rooms: body.rooms,
             RoomType: body.RoomType,
             bookedBy: req.userId,
             hotelId: body.hotelId
