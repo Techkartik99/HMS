@@ -5,7 +5,7 @@ import { MdOutlineDateRange } from "react-icons/md";
 import { GoPeople } from "react-icons/go";
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-// import { addItem } from '../../lib/store';
+import { addItem } from '../../lib/store';
 
 const Hero = () => {
   const dispatch = useDispatch()
